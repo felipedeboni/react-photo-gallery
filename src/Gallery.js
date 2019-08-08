@@ -15,7 +15,8 @@ const Gallery = React.memo(function Gallery({
   targetRowHeight,
   columns,
   renderImage,
-  justifyLastRow
+  justifyLastRow,
+  minRowHeight,
 }) {
   const [containerWidth, setContainerWidth] = useState(0);
   const galleryEl = useRef(null);
@@ -72,7 +73,15 @@ const Gallery = React.memo(function Gallery({
     }
 
     galleryStyle = { display: 'flex', flexWrap: 'wrap', flexDirection: 'row' };
-    thumbs = computeRowLayout({ containerWidth: width, limitNodeSearch, targetRowHeight, margin, photos, justifyLastRow });
+    thumbs = computeRowLayout({
+      containerWidth: width,
+      limitNodeSearch,
+      targetRowHeight,
+      margin,
+      photos,
+      justifyLastRow,
+      minRowHeight,
+    });
   }
   if (direction === 'column') {
     // allow user to calculate columns from containerWidth
@@ -123,14 +132,15 @@ Gallery.propTypes = {
   limitNodeSearch: PropTypes.oneOfType([PropTypes.func, PropTypes.number]),
   margin: PropTypes.number,
   renderImage: PropTypes.func,
-  justifyLastRow: PropTypes.bool
+  justifyLastRow: PropTypes.bool,
+  minRowHeight: PropTypes.number,
 };
 
 Gallery.defaultProps = {
   margin: 2,
   direction: 'row',
   targetRowHeight: 300,
-  justifyLastRow: true
+  justifyLastRow: true,
 };
 export { Photo };
 export default Gallery;

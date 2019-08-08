@@ -31,12 +31,54 @@ const makeGetNeighbors = (targetHeight, containerWidth, photos, limitNodeSearch,
   return results;
 };
 
-export const computeRowLayout = ({ containerWidth, limitNodeSearch, targetRowHeight, margin, photos, justifyLastRow }) => {
+const ensureMinHeight = (path, minRowHeight, containerWidth, margin, photos) => {
+  let done = false;
+  let i = 1;
+  let shouldReplaceIndex = false;
+
+  do {
+    const row = photos.slice(path[i - 1], path[i]);
+    const height = getCommonHeight(row, containerWidth, margin);
+    const hasSiblings = path[i] - path[i - 1] > 1;
+    const works = height >= minRowHeight || !hasSiblings;
+
+    if (!works) {
+      if (shouldReplaceIndex) {
+        path[i] = path[i] - 1;
+      } else {
+        path.splice(i, 0, path[i] - 1);
+        shouldReplaceIndex = true;
+      }
+    } else {
+      shouldReplaceIndex = false;
+
+      i += 1;
+
+      if (path.length === i) {
+        done = true;
+      }
+    }
+  } while (!done);
+
+  return path;
+};
+
+export const computeRowLayout = ({
+  containerWidth,
+  limitNodeSearch,
+  targetRowHeight,
+  margin,
+  photos,
+  justifyLastRow,
+  minRowHeight,
+}) => {
   // const t = +new Date();
   const getNeighbors = makeGetNeighbors(targetRowHeight, containerWidth, photos, limitNodeSearch, margin);
   let path = findShortestPath(getNeighbors, '0', photos.length);
   path = path.map(node => +node);
-
+  if (typeof minRowHeight === 'number') {
+    path = ensureMinHeight(path, minRowHeight, containerWidth, margin, photos);
+  }
   const totalRows = path.length - 1;
 
   // console.log(`time to find the shortest path: ${(+new Date() - t)} ms`);
