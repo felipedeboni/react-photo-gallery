@@ -97,6 +97,18 @@ export interface GalleryProps<CustomPhotoProps extends object = {}> {
    */
   limitNodeSearch?: number | ((containerWidth: number) => number)
   /**
+   * applies to row layouts only (direction=row)
+   * prevents the gallery from stretching the images and making it taller than
+   * maxHeight on the last line.
+   */
+  justifyLastRow?: bool
+  /**
+   * applies to row layouts only (direction=row)
+   * the gallery will try it's best make elements with at least the supplied
+   * value. If the element is using the entire row we can't ensure the minHeight
+   */
+  minRowHeight?: number
+  /**
    * do something when the user clicks a photo;
    * receives arguments event and an object containing the index,
    * photo obj originally sent and the next and previous photos in the gallery if they exist

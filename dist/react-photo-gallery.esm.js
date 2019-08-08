@@ -476,19 +476,56 @@ var makeGetNeighbors = function makeGetNeighbors(targetHeight, containerWidth, p
   };
 };
 
+var ensureMinHeight = function ensureMinHeight(path, minRowHeight, containerWidth, margin, photos) {
+  var done = false;
+  var i = 1;
+  var shouldReplaceIndex = false;
+
+  do {
+    var row = photos.slice(path[i - 1], path[i]);
+    var height = getCommonHeight(row, containerWidth, margin);
+    var hasSiblings = path[i] - path[i - 1] > 1;
+    var works = height >= minRowHeight || !hasSiblings;
+
+    if (!works) {
+      if (shouldReplaceIndex) {
+        path[i] = path[i] - 1;
+      } else {
+        path.splice(i, 0, path[i] - 1);
+        shouldReplaceIndex = true;
+      }
+    } else {
+      shouldReplaceIndex = false;
+      i += 1;
+
+      if (path.length === i) {
+        done = true;
+      }
+    }
+  } while (!done);
+
+  return path;
+};
+
 var computeRowLayout = function computeRowLayout(_ref) {
   var containerWidth = _ref.containerWidth,
       limitNodeSearch = _ref.limitNodeSearch,
       targetRowHeight = _ref.targetRowHeight,
       margin = _ref.margin,
       photos = _ref.photos,
-      justifyLastRow = _ref.justifyLastRow;
+      justifyLastRow = _ref.justifyLastRow,
+      minRowHeight = _ref.minRowHeight;
   // const t = +new Date();
   var getNeighbors = makeGetNeighbors(targetRowHeight, containerWidth, photos, limitNodeSearch, margin);
   var path = findShortestPath(getNeighbors, '0', photos.length);
   path = path.map(function (node) {
     return +node;
   });
+
+  if (typeof minRowHeight === 'number') {
+    path = ensureMinHeight(path, minRowHeight, containerWidth, margin, photos);
+  }
+
   var totalRows = path.length - 1; // console.log(`time to find the shortest path: ${(+new Date() - t)} ms`);
 
   for (var i = 1; i < path.length; ++i) {
@@ -528,7 +565,8 @@ var Gallery = React.memo(function Gallery(_ref) {
       targetRowHeight = _ref.targetRowHeight,
       columns = _ref.columns,
       renderImage = _ref.renderImage,
-      justifyLastRow = _ref.justifyLastRow;
+      justifyLastRow = _ref.justifyLastRow,
+      minRowHeight = _ref.minRowHeight;
 
   var _useState = useState(0),
       _useState2 = _slicedToArray(_useState, 2),
@@ -608,7 +646,8 @@ var Gallery = React.memo(function Gallery(_ref) {
       targetRowHeight: targetRowHeight,
       margin: margin,
       photos: photos,
-      justifyLastRow: justifyLastRow
+      justifyLastRow: justifyLastRow,
+      minRowHeight: minRowHeight
     });
   }
 
@@ -672,7 +711,8 @@ Gallery.propTypes = {
   limitNodeSearch: PropTypes.oneOfType([PropTypes.func, PropTypes.number]),
   margin: PropTypes.number,
   renderImage: PropTypes.func,
-  justifyLastRow: PropTypes.bool
+  justifyLastRow: PropTypes.bool,
+  minRowHeight: PropTypes.number
 };
 Gallery.defaultProps = {
   margin: 2,
